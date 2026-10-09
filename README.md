@@ -41,6 +41,26 @@ python -m http.server 8000
 
 Then open [http://localhost:8000](http://localhost:8000) in your browser. Press `Ctrl+C` in the terminal to stop the server.
 
+## Prototype workflow
+
+The dashboard guides the user through one stage at a time:
+
+1. Review artisan profiles.
+2. Record skill checks and training progress.
+3. Choose a product.
+4. Configure a sample order.
+5. Review the purchase order.
+6. Track the order.
+7. Review the earnings estimate.
+
+The progress indicator shows the current stage. Use the task action to continue or **Previous step** to go back; later stages are not directly accessible.
+
 ## Prototype notes
 
 The dashboard is built with plain HTML, CSS, and JavaScript. It currently uses sample data and is a prototype, not a deployed service or connected backend.
+
+## Voice help
+
+Choose **Hear instructions** to listen to guidance for the current step. In a supported browser, choose **Use voice commands** and allow microphone access to say “next”, “back”, or “repeat”. Commands follow the selected English, Hindi, or Marathi language. Voice controls are optional; all steps can also be completed with the on-screen buttons.
+
+Voice command support depends on the browser and may require localhost or HTTPS. The browser may process speech recognition audio; the prototype does not record or save it.

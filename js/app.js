@@ -3,10 +3,11 @@
  */
 
 const APP_STATE = {
-  currentTab: 'artisans', // 'artisans', 'catalog', 'impact'
   currentStep: 1, // 1: Profiles, 2: Training, 3: Catalog, 4: Order, 5: PO, 6: Tracker, 7: Impact
   lang: 'en', // 'en', 'hi', 'mr'
   selectedFilter: 'all',
+  voiceRecognition: null,
+  voiceListening: false,
 
   artisans: [
     { id: 'sb', name: 'Sunita Bai', role: 'Artisan Lead', craft: 'Jhoomar & Wall Hangings', exp: '5–6 years', status: 'ready_packaging', score: 100, hamlet: 'Artisan Group · Rampur' },
@@ -50,22 +51,42 @@ const I18N = {
   en: {
     hubTitle: 'Hunar Saarthi',
     trackName: 'Artisan livelihood workspace',
-    tabArtisans: 'Artisan Groups',
-    tabCatalog: 'Products & Orders',
-    tabImpact: 'Earnings Overview',
+    stepCounter: 'Step',
+    stepOf: 'of',
+    previousStep: 'Previous step',
+    voiceTitle: 'Voice help',
+    speakInstructions: 'Hear instructions',
+    startVoiceCommands: 'Use voice commands',
+    stopVoiceCommands: 'Stop listening',
+    voiceReady: 'Voice help is optional. Hear this step or say “next”, “back”, or “repeat”.',
+    voiceUnavailable: 'Voice commands are not supported in this browser. Try Chrome or Edge over localhost or HTTPS.',
+    voiceMicError: 'Microphone access failed. Check browser permissions and try again.',
+    voiceRecognitionError: 'Voice recognition could not start. Check microphone access and try again.',
+    voiceListening: 'Listening. Say “next”, “back”, or “repeat”.',
+    voiceStopped: 'Voice command listening stopped.',
+    voiceNotHeard: 'I did not catch that. Please try “next”, “back”, or “repeat”.',
+    voiceInstructionsUnavailable: 'Spoken instructions are not supported in this browser.',
+    voicePrivacy: 'Microphone access is used only after you press the button. Your browser may process voice commands.',
+    voiceWorkflowComplete: 'You are at the end of the demo. Say “back” to review the previous step or start again on screen.',
+    voiceAtStart: 'This is the first step. Say “next” to continue.',
+    voiceGuidance: [
+      'Review the artisan profiles, then choose Continue to skill check.',
+      'Choose an artisan, complete the skill checks, then say “next” to save the result.',
+      'Choose a product, or say “next” to use the first product, to continue to the sample order.',
+      'Review the sample order and choose Generate Purchase Order.',
+      'Review the sample purchase order, then choose Confirm and Track Order.',
+      'Review the order status. Choose Continue to Impact when ready.',
+      'Review the sample earnings estimate. You can start the workflow again.'
+    ],
+    voiceNext: ['next', 'continue', 'आगे', 'अगला', 'जारी रखें', 'पुढे', 'चला'],
+    voiceBack: ['back', 'previous', 'वापस', 'पीछे', 'पिछला', 'मागे'],
+    voiceRepeat: ['repeat', 'help', 'दोहराएं', 'दोहराइए', 'फिर से', 'पुन्हा', 'मदत'],
     step1: 'Profiles', step2: 'Training', step3: 'Catalog', step4: 'Order', step5: 'Purchase Order', step6: 'Tracker', step7: 'Impact',
-    activeArtisans: '15 Active Artisans',
     hamletName: 'Artisan Group',
-    leadName: 'Sunita Bai (Artisan Lead)',
-    skillModule: 'Skill Progress',
-    standardSize: 'Standard Sizing & Finishing',
-    gradeA: 'Quality checked',
-    targetIncome: 'Target Income: ₹10,500/mo ↑',
-    directPayout: '80% Direct Artisan Payout',
+    groupLocation: 'Rampur group',
+    peopleInGroup: 'people in this group',
+    continueToTraining: 'Continue to skill check',
     totalArtisans: 'Total Artisans',
-    trainingCompleted: 'Training Completed',
-    readyEcoPack: 'Ready for Eco-Packaging',
-    inStock: 'In Stock',
     filterAll: 'ALL',
     filterPending: 'Pending Training',
     filterPass: 'Training Pass',
@@ -78,39 +99,57 @@ const I18N = {
     saveTraining: 'Save Training Result',
     genPO: 'Generate Purchase Order',
     confirmTrack: 'Confirm & Track Order',
-    downloadPO: 'Download PO (PDF)',
+    downloadPO: 'Download PO',
     orderConfirmed: 'Order Confirmed',
     materialsAllocated: 'Materials Allocated',
     productionProgress: 'Production In Progress',
     readyDispatch: 'Ready for Dispatch',
     delivered: 'Delivered',
-    orderSummary: 'Order & Impact Summary',
     unitEconomics: 'Unit Economics (per unit)',
     sellingPrice: 'Selling Price',
     artisanPayout: 'Artisan Payout',
     materialCost: 'Material Cost',
-    communityShare: 'Community operations share',
-    impactDesc: 'Supports livelihoods, preserves crafts, and builds sustainable communities.'
+    communityShare: 'Community operations share'
   },
   hi: {
     hubTitle: 'हुनर सारथी',
     trackName: 'कारीगर आजीविका कार्यक्षेत्र',
-    tabArtisans: 'कारीगर समूह',
-    tabCatalog: 'उत्पाद और ऑर्डर',
-    tabImpact: 'कमाई का सारांश',
+    stepCounter: 'चरण',
+    stepOf: '/',
+    previousStep: 'पिछला चरण',
+    voiceTitle: 'आवाज़ से मदद',
+    speakInstructions: 'निर्देश सुनें',
+    startVoiceCommands: 'आवाज़ से निर्देश दें',
+    stopVoiceCommands: 'सुनना बंद करें',
+    voiceReady: 'आवाज़ से मदद वैकल्पिक है। निर्देश सुनें या “आगे”, “वापस” अथवा “दोहराएं” कहें।',
+    voiceUnavailable: 'इस ब्राउज़र में आवाज़ से निर्देश उपलब्ध नहीं हैं। Chrome या Edge में localhost अथवा HTTPS पर खोलें।',
+    voiceMicError: 'माइक्रोफ़ोन नहीं चला। ब्राउज़र की अनुमति जाँचें और फिर कोशिश करें।',
+    voiceRecognitionError: 'आवाज़ की पहचान शुरू नहीं हुई। माइक्रोफ़ोन की अनुमति जाँचें और फिर कोशिश करें।',
+    voiceListening: 'सुन रहा है। “आगे”, “वापस” या “दोहराएं” कहें।',
+    voiceStopped: 'आवाज़ सुनना बंद है।',
+    voiceNotHeard: 'समझ नहीं आया। “आगे”, “वापस” या “दोहराएं” कहें।',
+    voiceInstructionsUnavailable: 'इस ब्राउज़र में आवाज़ में निर्देश उपलब्ध नहीं हैं।',
+    voicePrivacy: 'माइक्रोफ़ोन बटन दबाने पर ही चालू होता है। आपका ब्राउज़र आवाज़ के निर्देश संसाधित कर सकता है।',
+    voiceWorkflowComplete: 'डेमो पूरा हुआ। पिछला चरण देखने के लिए “वापस” कहें या स्क्रीन से फिर शुरू करें।',
+    voiceAtStart: 'यह पहला चरण है। आगे जाने के लिए “आगे” कहें।',
+    voiceGuidance: [
+      'कारीगरों की प्रोफ़ाइल देखें, फिर कौशल जाँच पर जाएँ चुनें।',
+      'कारीगर चुनें, कौशल जाँच पूरी करें और परिणाम सहेजने के लिए “आगे” कहें।',
+      'एक उत्पाद चुनें। पहला उत्पाद चुनने के लिए “आगे” कहें।',
+      'नमूना ऑर्डर देखें और खरीद आदेश बनाएं चुनें।',
+      'नमूना खरीद आदेश देखें, फिर पुष्टि करें और ऑर्डर ट्रैक करें चुनें।',
+      'ऑर्डर की स्थिति देखें। तैयार होने पर प्रभाव देखें चुनें।',
+      'कमाई का नमूना अनुमान देखें। आप कार्यप्रवाह फिर से शुरू कर सकते हैं।'
+    ],
+    voiceNext: ['आगे', 'अगला', 'जारी रखें'],
+    voiceBack: ['वापस', 'पीछे', 'पिछला'],
+    voiceRepeat: ['दोहराएं', 'दोहराइए', 'फिर से'],
     step1: 'प्रोफाइल', step2: 'प्रशिक्षण', step3: 'कैटलॉग', step4: 'ऑर्डर', step5: 'खरीद आदेश', step6: 'ट्रैकर', step7: 'प्रभाव',
-    activeArtisans: '15 सक्रिय कारीगर',
     hamletName: 'कारीगर समूह',
-    leadName: 'सुनीता बाई (कारीगर प्रमुख)',
-    skillModule: 'कौशल की प्रगति',
-    standardSize: 'मानक आकार व फिनिशिंग',
-    gradeA: 'गुणवत्ता जाँची गई',
-    targetIncome: 'लक्षित आय: ₹10,500/माह ↑',
-    directPayout: '80% प्रत्यक्ष कारीगर भुगतान',
+    groupLocation: 'रामपुर समूह',
+    peopleInGroup: 'इस समूह में लोग',
+    continueToTraining: 'कौशल जाँच पर जाएँ',
     totalArtisans: 'कुल कारीगर',
-    trainingCompleted: 'प्रशिक्षण पूर्ण',
-    readyEcoPack: 'इको-पैकिंग हेतु तैयार',
-    inStock: 'स्टॉक में उपलब्ध',
     filterAll: 'सभी',
     filterPending: 'प्रशिक्षण प्रतीक्षारत',
     filterPass: 'प्रशिक्षण उत्तीर्ण',
@@ -129,33 +168,51 @@ const I18N = {
     productionProgress: 'उत्पादन प्रगति पर',
     readyDispatch: 'भेजने के लिए तैयार',
     delivered: 'सफलतापूर्वक वितरित',
-    orderSummary: 'ऑर्डर व प्रभाव सारांश',
     unitEconomics: 'इकाई अर्थशास्त्र (प्रति पीस)',
     sellingPrice: 'विक्रय मूल्य',
     artisanPayout: 'कारीगर की कमाई',
     materialCost: 'कच्चा माल लागत',
-    communityShare: 'सामुदायिक संचालन हिस्सा',
-    impactDesc: 'आजीविका सशक्तिकरण, कला संरक्षण और आत्मनिर्भर समुदाय निर्माण।'
+    communityShare: 'सामुदायिक संचालन हिस्सा'
   },
   mr: {
     hubTitle: 'हुनर सारथी',
     trackName: 'कारागीर उपजीविका कार्यक्षेत्र',
-    tabArtisans: 'कारागीर गट',
-    tabCatalog: 'उत्पादने आणि ऑर्डर',
-    tabImpact: 'कमाईचा आढावा',
+    stepCounter: 'टप्पा',
+    stepOf: '/',
+    previousStep: 'मागील टप्पा',
+    voiceTitle: 'आवाज मदत',
+    speakInstructions: 'सूचना ऐका',
+    startVoiceCommands: 'आवाजाने सूचना द्या',
+    stopVoiceCommands: 'ऐकणे थांबवा',
+    voiceReady: 'आवाज मदत ऐच्छिक आहे. सूचना ऐका किंवा “पुढे”, “मागे” अथवा “पुन्हा” म्हणा.',
+    voiceUnavailable: 'या ब्राउझरमध्ये आवाज सूचना उपलब्ध नाहीत. Chrome किंवा Edge मध्ये localhost अथवा HTTPS वापरा.',
+    voiceMicError: 'मायक्रोफोन सुरू झाला नाही. ब्राउझरची परवानगी तपासा आणि पुन्हा प्रयत्न करा.',
+    voiceRecognitionError: 'आवाज ओळख सुरू झाली नाही. मायक्रोफोनची परवानगी तपासा आणि पुन्हा प्रयत्न करा.',
+    voiceListening: 'ऐकत आहे. “पुढे”, “मागे” किंवा “पुन्हा” म्हणा.',
+    voiceStopped: 'आवाज ऐकणे थांबवले.',
+    voiceNotHeard: 'समजले नाही. “पुढे”, “मागे” किंवा “पुन्हा” म्हणा.',
+    voiceInstructionsUnavailable: 'या ब्राउझरमध्ये बोललेल्या सूचना उपलब्ध नाहीत.',
+    voicePrivacy: 'मायक्रोफोन बटण दाबल्यावरच सुरू होतो. ब्राउझर आवाज सूचना प्रक्रिया करू शकतो.',
+    voiceWorkflowComplete: 'डेमो पूर्ण झाला. मागील टप्प्यासाठी “मागे” म्हणा किंवा स्क्रीनवरून पुन्हा सुरू करा.',
+    voiceAtStart: 'हा पहिला टप्पा आहे. पुढे जाण्यासाठी “पुढे” म्हणा.',
+    voiceGuidance: [
+      'कारागिरांच्या प्रोफाइल पाहा, नंतर कौशल्य तपासणीकडे जा निवडा.',
+      'कारागीर निवडा, कौशल्य तपासणी पूर्ण करा आणि निकाल जतन करण्यासाठी “पुढे” म्हणा.',
+      'उत्पादन निवडा. पहिले उत्पादन निवडण्यासाठी “पुढे” म्हणा.',
+      'नमुना ऑर्डर तपासा आणि खरेदी आदेश तयार करा निवडा.',
+      'नमुना खरेदी आदेश तपासा, नंतर पुष्टी करून ऑर्डर ट्रॅक करा निवडा.',
+      'ऑर्डरची स्थिती पाहा. तयार झाल्यावर परिणामाकडे पुढे जा निवडा.',
+      'कमाईचा नमुना अंदाज पाहा. कार्यप्रवाह पुन्हा सुरू करू शकता.'
+    ],
+    voiceNext: ['पुढे', 'चला'],
+    voiceBack: ['मागे', 'मागील'],
+    voiceRepeat: ['पुन्हा', 'मदत'],
     step1: 'प्रोफाइल्स', step2: 'प्रशिक्षण', step3: 'कॅटलॉग', step4: 'ऑर्डर', step5: 'खरेदी आदेश', step6: 'ट्रॅकर', step7: 'प्रभाव',
-    activeArtisans: '15 सक्रिय कारागीर',
     hamletName: 'कारागीर गट',
-    leadName: 'सुनीता बाई (कारागीर प्रमुख)',
-    skillModule: 'कौशल्याची प्रगती',
-    standardSize: 'प्रमाणित आकार व फिनिशिंग',
-    gradeA: 'गुणवत्ता तपासली',
-    targetIncome: 'लक्ष्य उत्पन्न: ₹10,500/महिना ↑',
-    directPayout: '80% थेट कारागीर परतावा',
+    groupLocation: 'रामपूर गट',
+    peopleInGroup: 'या गटातील सदस्य',
+    continueToTraining: 'कौशल्य तपासणीकडे जा',
     totalArtisans: 'एकूण कारागीर',
-    trainingCompleted: 'प्रशिक्षण पूर्ण',
-    readyEcoPack: 'इको-पॅकिंगसाठी सज्ज',
-    inStock: 'स्टॉकमध्ये उपलब्ध',
     filterAll: 'सर्व',
     filterPending: 'प्रशिक्षण बाकी',
     filterPass: 'प्रशिक्षण उत्तीर्ण',
@@ -174,13 +231,11 @@ const I18N = {
     productionProgress: 'उत्पादन सुरू',
     readyDispatch: 'पाठवण्यासाठी सज्ज',
     delivered: 'वितरित केले',
-    orderSummary: 'ऑर्डर व प्रभाव सारांश',
     unitEconomics: 'युनिट अर्थशास्त्र (प्रति नग)',
     sellingPrice: 'विक्री किंमत',
     artisanPayout: 'कारागीर वाटा',
     materialCost: 'कच्चा माल खर्च',
-    communityShare: 'समुदाय संचालन हिस्सा',
-    impactDesc: 'उपजीविका बळकटीकरण आणि स्वावलंबी समुदाय निर्मिती.'
+    communityShare: 'समुदाय संचालन हिस्सा'
   }
 };
 
@@ -201,35 +256,131 @@ function initApp() {
 
 // Change Step (1 to 7)
 function goToStep(step) {
-  APP_STATE.currentStep = step;
-  if (step === 1 || step === 2) {
-    APP_STATE.currentTab = 'artisans';
-  } else if (step >= 3 && step <= 6) {
-    APP_STATE.currentTab = 'catalog';
-  } else if (step === 7) {
-    APP_STATE.currentTab = 'impact';
+  if (!Number.isInteger(step) || step < 1 || step > 7 || step > APP_STATE.currentStep + 1) {
+    return;
   }
+
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  APP_STATE.currentStep = step;
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Change Tab
-function switchTab(tab) {
-  APP_STATE.currentTab = tab;
-  if (tab === 'artisans') {
-    APP_STATE.currentStep = 1;
-  } else if (tab === 'catalog') {
-    APP_STATE.currentStep = 3;
-  } else if (tab === 'impact') {
-    APP_STATE.currentStep = 7;
-  }
+// Change Language
+function switchLang(lang) {
+  if (APP_STATE.voiceListening) APP_STATE.voiceRecognition.stop();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  APP_STATE.lang = lang;
   render();
 }
 
-// Change Language
-function switchLang(lang) {
-  APP_STATE.lang = lang;
-  render();
+function voiceLanguage() {
+  return { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN' }[APP_STATE.lang] || 'en-IN';
+}
+
+function setVoiceStatus(message) {
+  const status = document.getElementById('voice-status');
+  if (status) status.textContent = message;
+}
+
+function speakStepGuidance() {
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    setVoiceStatus(t('voiceInstructionsUnavailable'));
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(t('voiceGuidance')[APP_STATE.currentStep - 1]);
+  utterance.lang = voiceLanguage();
+  const voice = window.speechSynthesis.getVoices().find(item => item.lang.toLowerCase().startsWith(APP_STATE.lang));
+  if (voice) utterance.voice = voice;
+  window.speechSynthesis.speak(utterance);
+  setVoiceStatus(t('voiceGuidance')[APP_STATE.currentStep - 1]);
+}
+
+function toggleVoiceCommands() {
+  if (APP_STATE.voiceListening) {
+    APP_STATE.voiceRecognition.stop();
+    return;
+  }
+
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    setVoiceStatus(t('voiceUnavailable'));
+    return;
+  }
+
+  const recognition = new Recognition();
+  recognition.lang = voiceLanguage();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  APP_STATE.voiceRecognition = recognition;
+  recognition.onstart = () => {
+    APP_STATE.voiceListening = true;
+    const button = document.getElementById('voice-command-button');
+    if (button) button.textContent = `🎙 ${t('stopVoiceCommands')}`;
+    setVoiceStatus(t('voiceListening'));
+  };
+  recognition.onresult = event => {
+    const transcript = event.results[event.resultIndex][0].transcript.trim().toLocaleLowerCase(APP_STATE.lang);
+    if (t('voiceNext').some(command => transcript.includes(command))) {
+      advanceWorkflowByVoice();
+    } else if (t('voiceBack').some(command => transcript.includes(command))) {
+      if (APP_STATE.currentStep === 1) {
+        setVoiceStatus(t('voiceAtStart'));
+      } else {
+        goToStep(APP_STATE.currentStep - 1);
+      }
+    } else if (t('voiceRepeat').some(command => transcript.includes(command))) {
+      speakStepGuidance();
+    } else {
+      setVoiceStatus(t('voiceNotHeard'));
+    }
+  };
+  recognition.onerror = event => {
+    APP_STATE.voiceListening = false;
+    const button = document.getElementById('voice-command-button');
+    if (button) button.textContent = `🎙 ${t('startVoiceCommands')}`;
+    setVoiceStatus(event.error === 'not-allowed' || event.error === 'service-not-allowed'
+      ? t('voiceMicError')
+      : t('voiceRecognitionError'));
+  };
+  recognition.onend = () => {
+    APP_STATE.voiceListening = false;
+    APP_STATE.voiceRecognition = null;
+    const button = document.getElementById('voice-command-button');
+    if (button) button.textContent = `🎙 ${t('startVoiceCommands')}`;
+  };
+
+  recognition.start();
+}
+
+function advanceWorkflowByVoice() {
+  switch (APP_STATE.currentStep) {
+    case 1:
+      goToStep(2);
+      break;
+    case 2:
+      submitTraining();
+      break;
+    case 3:
+      selectProductForOrder(APP_STATE.products[0].id);
+      break;
+    case 4:
+      generatePO();
+      break;
+    case 5:
+      goToStep(6);
+      break;
+    case 6:
+      goToStep(7);
+      break;
+    case 7:
+      setVoiceStatus(t('voiceWorkflowComplete'));
+      break;
+    default:
+      setVoiceStatus(t('voiceNotHeard'));
+  }
 }
 
 // Set Filter
@@ -244,6 +395,8 @@ function render() {
   if (!root) return;
 
   const currentStep = APP_STATE.currentStep;
+  const currentStepLabel = t(`step${currentStep}`);
+  const progressPercent = (currentStep / 7) * 100;
 
   let mainContentHtml = '';
   switch (currentStep) {
@@ -297,71 +450,42 @@ function render() {
       </div>
     </header>
 
-    <!-- Top 3 Categories Tabs -->
-    <nav class="tabs-bar">
-      <div class="tabs-inner">
-        <div class="tab-item ${APP_STATE.currentTab === 'artisans' ? 'active' : ''}" onclick="switchTab('artisans')">
-          <span>👥</span> ${t('tabArtisans')}
-        </div>
-        <div class="tab-item ${APP_STATE.currentTab === 'catalog' ? 'active' : ''}" onclick="switchTab('catalog')">
-          <span>📦</span> ${t('tabCatalog')}
-        </div>
-        <div class="tab-item ${APP_STATE.currentTab === 'impact' ? 'active' : ''}" onclick="switchTab('impact')">
-          <span>📊</span> ${t('tabImpact')}
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Dynamic Container -->
+    <!-- Show the current task only; do not expose future workflow stages as navigation. -->
     <main class="main-container">
+      <section class="workflow-progress" aria-label="Workflow progress">
+        <div class="workflow-progress-heading">
+          <span>${t('stepCounter')} ${currentStep} ${t('stepOf')} 7</span>
+          <h1>${currentStepLabel}</h1>
+        </div>
+        <div
+          class="workflow-progress-track"
+          role="progressbar"
+          aria-label="${t('stepCounter')} ${currentStep} ${t('stepOf')} 7"
+          aria-valuemin="1"
+          aria-valuemax="7"
+          aria-valuenow="${currentStep}"
+        >
+          <span style="width:${progressPercent}%"></span>
+        </div>
+        <div class="voice-help">
+          <div class="voice-help-copy">
+            <strong>${t('voiceTitle')}</strong>
+            <p>${t('voicePrivacy')}</p>
+          </div>
+          <div class="voice-help-actions">
+            <button class="btn-outline voice-button" onclick="speakStepGuidance()">🔊 ${t('speakInstructions')}</button>
+            <button id="voice-command-button" class="btn-outline voice-button" onclick="toggleVoiceCommands()">🎙 ${t('startVoiceCommands')}</button>
+          </div>
+          <p id="voice-status" class="voice-status" role="status" aria-live="polite">${t('voiceReady')}</p>
+        </div>
+      </section>
       ${mainContentHtml}
+      ${currentStep > 1 ? `
+        <nav class="workflow-navigation" aria-label="Workflow navigation">
+          <button class="btn-outline" onclick="goToStep(${currentStep - 1})">← ${t('previousStep')}</button>
+        </nav>
+      ` : ''}
     </main>
-
-    <!-- Fixed 7-Step Bottom Navigation Bar -->
-    <footer class="bottom-stepper-bar">
-      <div class="bottom-stepper-inner">
-        <div class="nav-step-item ${currentStep === 1 ? 'active' : ''}" onclick="goToStep(1)">
-          <span class="nav-step-num">1</span>
-          <span>${t('step1')}</span>
-        </div>
-        <span class="nav-arrow">→</span>
-
-        <div class="nav-step-item ${currentStep === 2 ? 'active' : ''}" onclick="goToStep(2)">
-          <span class="nav-step-num">2</span>
-          <span>${t('step2')}</span>
-        </div>
-        <span class="nav-arrow">→</span>
-
-        <div class="nav-step-item ${currentStep === 3 ? 'active' : ''}" onclick="goToStep(3)">
-          <span class="nav-step-num">3</span>
-          <span>${t('step3')}</span>
-        </div>
-        <span class="nav-arrow">→</span>
-
-        <div class="nav-step-item ${currentStep === 4 ? 'active' : ''}" onclick="goToStep(4)">
-          <span class="nav-step-num">4</span>
-          <span>${t('step4')}</span>
-        </div>
-        <span class="nav-arrow">→</span>
-
-        <div class="nav-step-item ${currentStep === 5 ? 'active' : ''}" onclick="goToStep(5)">
-          <span class="nav-step-num">5</span>
-          <span>${t('step5')}</span>
-        </div>
-        <span class="nav-arrow">→</span>
-
-        <div class="nav-step-item ${currentStep === 6 ? 'active' : ''}" onclick="goToStep(6)">
-          <span class="nav-step-num">6</span>
-          <span>${t('step6')}</span>
-        </div>
-        <span class="nav-arrow">→</span>
-
-        <div class="nav-step-item ${currentStep === 7 ? 'active' : ''}" onclick="goToStep(7)">
-          <span class="nav-step-num">7</span>
-          <span>${t('step7')}</span>
-        </div>
-      </div>
-    </footer>
   `;
 }
 
@@ -375,70 +499,28 @@ function renderProfilesScreen() {
   });
 
   return `
-    <!-- Artisan group summary -->
-    <div class="hub-card" style="background: linear-gradient(135deg, #182438, #25334D); color:#fff;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-        <div style="display:flex; align-items:center; gap:14px;">
-          <div style="width:52px; height:52px; border-radius:50%; background:#E05A36; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; border:2px solid rgba(255,255,255,0.4);">
-            SB
-          </div>
-          <div>
-            <h2 style="font-size:20px; font-weight:800; margin-bottom:2px;">${t('hamletName')} — Sunita Bai (Artisan Lead)</h2>
-            <div style="font-size:13px; color:rgba(255,255,255,0.8);">📍 Rampur Cluster · ${t('activeArtisans')}</div>
-          </div>
-        </div>
-        <div class="badge badge-green" style="font-size:13px; padding:6px 14px;">
-          ✓ ${t('gradeA')}
-        </div>
-      </div>
-
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-top:16px; border-top:1px solid rgba(255,255,255,0.15); padding-top:16px;">
+    <div class="group-summary">
+      <div class="group-summary-details">
+        <div class="group-summary-avatar" aria-hidden="true">SB</div>
         <div>
-          <div style="font-size:12px; color:rgba(255,255,255,0.7);">${t('skillModule')}</div>
-          <div style="font-size:18px; font-weight:800; color:#4ade80;">100% Complete</div>
-          <div style="font-size:12px; color:rgba(255,255,255,0.9);">✓ ${t('standardSize')}</div>
-        </div>
-        <div>
-          <div style="font-size:12px; color:rgba(255,255,255,0.7);">${t('orderSummary')}</div>
-          <div style="font-size:18px; font-weight:800; color:#fbbf24;">₹10,500/mo ↑</div>
-          <div style="font-size:12px; color:rgba(255,255,255,0.9);">${t('directPayout')}</div>
-        </div>
-        <div style="display:flex; align-items:center; justify-content:flex-end;">
-          <button class="btn-primary" onclick="goToStep(2)">
-            ${t('logMicro')} →
-          </button>
+          <h2>${t('hamletName')}</h2>
+          <p>${t('groupLocation')} · ${APP_STATE.artisans.length} ${t('peopleInGroup')}</p>
         </div>
       </div>
-    </div>
-
-    <!-- Stats Row (20, 5, 4, 6) -->
-    <div class="stat-chips-grid">
-      <div class="stat-chip-box">
-        <div class="stat-chip-num">20</div>
-        <div class="stat-chip-label">${t('totalArtisans')}</div>
-      </div>
-      <div class="stat-chip-box">
-        <div class="stat-chip-num" style="color:var(--green)">5</div>
-        <div class="stat-chip-label">${t('trainingCompleted')}</div>
-      </div>
-      <div class="stat-chip-box">
-        <div class="stat-chip-num" style="color:var(--gold)">4</div>
-        <div class="stat-chip-label">${t('readyEcoPack')}</div>
-      </div>
-      <div class="stat-chip-box">
-        <div class="stat-chip-num" style="color:var(--blue)">6</div>
-        <div class="stat-chip-label">${t('inStock')}</div>
-      </div>
+      <button class="btn-primary" onclick="goToStep(2)">${t('continueToTraining')} →</button>
     </div>
 
     <!-- Filter Pills -->
-    <div class="filter-pills-bar">
-      <button class="pill-btn ${APP_STATE.selectedFilter === 'all' ? 'active' : ''}" onclick="setArtisanFilter('all')">${t('filterAll')}</button>
+    <div class="artisan-list-heading">
+      <h2>${t('totalArtisans')}</h2>
+      <div class="filter-pills-bar">
+        <button class="pill-btn ${APP_STATE.selectedFilter === 'all' ? 'active' : ''}" onclick="setArtisanFilter('all')">${t('filterAll')}</button>
       <button class="pill-btn ${APP_STATE.selectedFilter === 'pending' ? 'active' : ''}" onclick="setArtisanFilter('pending')">${t('filterPending')}</button>
       <button class="pill-btn ${APP_STATE.selectedFilter === 'training_pass' ? 'active' : ''}" onclick="setArtisanFilter('training_pass')">${t('filterPass')}</button>
       <button class="pill-btn ${APP_STATE.selectedFilter === 'needs_practice' ? 'active' : ''}" onclick="setArtisanFilter('needs_practice')">${t('filterNeeds')}</button>
       <button class="pill-btn ${APP_STATE.selectedFilter === 'ready_packaging' ? 'active' : ''}" onclick="setArtisanFilter('ready_packaging')">${t('filterPackaging')}</button>
       <button class="pill-btn ${APP_STATE.selectedFilter === 'in_stock' ? 'active' : ''}" onclick="setArtisanFilter('in_stock')">${t('filterStock')}</button>
+      </div>
     </div>
 
     <!-- Artisan Cards List -->
@@ -453,7 +535,7 @@ function renderProfilesScreen() {
         else if (a.status === 'needs_practice') { badgeClass = 'badge-gold'; badgeText = 'Needs Practice'; }
 
         return `
-          <div class="artisan-item-card" onclick="goToStep(2)">
+          <div class="artisan-item-card">
             <div class="artisan-avatar-block">
               <div class="artisan-avatar">${a.id.toUpperCase()}</div>
               <div class="artisan-info">
@@ -470,14 +552,6 @@ function renderProfilesScreen() {
       }).join('')}
     </div>
 
-    <!-- Bottom Action Card -->
-    <div class="hub-card" style="margin-top:24px; text-align:center; background:linear-gradient(135deg, #FFF7ED, #FFFFFF);">
-      <h3 style="font-size:18px; font-weight:800; color:var(--primary); margin-bottom:6px;">${t('createSampleOrder')}</h3>
-      <p style="font-size:13px; color:var(--slate); margin-bottom:14px;">${t('sampleOrderDesc')}</p>
-      <button class="btn-primary" onclick="goToStep(3)">
-        View products & orders →
-      </button>
-    </div>
   `;
 }
 
@@ -542,8 +616,7 @@ function renderTrainingScreen() {
       </div>
 
       <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
-        <button class="btn-outline" onclick="goToStep(1)">← Back to Profiles</button>
-        <button class="btn-primary" onclick="submitTraining()">✓ ${t('saveTraining')} & Proceed to Catalog →</button>
+        <button class="btn-primary" onclick="submitTraining()">✓ ${t('saveTraining')} & Continue to ${t('step3')} →</button>
       </div>
     </div>
   `;
@@ -553,9 +626,14 @@ function submitTraining() {
   const select = document.getElementById('trainArtisanSelect');
   const artisanId = select.value;
   const artisan = APP_STATE.artisans.find(a => a.id === artisanId);
+  const checks = ['sizeCheck', 'knotCheck'].map(name =>
+    document.querySelector(`input[name="${name}"]:checked`)?.value
+  );
+  const passedChecks = checks.filter(result => result === 'pass').length;
+
   if (artisan) {
-    artisan.status = 'training_pass';
-    artisan.score = 100;
+    artisan.status = passedChecks === checks.length ? 'training_pass' : 'needs_practice';
+    artisan.score = Math.round((passedChecks / checks.length) * 100);
   }
   goToStep(3);
 }
@@ -568,14 +646,11 @@ function renderCatalogScreen() {
     <div class="hub-card">
       <div class="card-header-row">
         <div>
-          <h2 class="card-title">🎁 ${t('tabCatalog')}</h2>
+          <h2 class="card-title">🎁 ${t('step3')}</h2>
           <p class="card-desc" style="margin-bottom:0;">
             Browse products and prices.
           </p>
         </div>
-        <button class="btn-primary" onclick="goToStep(4)">
-          + ${t('createSampleOrder')} →
-        </button>
       </div>
 
       <div class="product-catalog-grid">
@@ -690,7 +765,6 @@ function renderOrderScreen() {
       </div>
 
       <div style="display:flex; gap:12px; justify-content:flex-end;">
-        <button class="btn-outline" onclick="goToStep(3)">Cancel</button>
         <button class="btn-primary" onclick="generatePO()">
           ✓ ${t('genPO')} →
         </button>
@@ -939,9 +1013,8 @@ function renderTrackerScreen() {
         </div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; margin-top:24px;">
-        <button class="btn-outline" onclick="goToStep(5)">← View Purchase Order</button>
-        <button class="btn-primary" onclick="goToStep(7)">Proceed to Impact & Financial Calculator →</button>
+      <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+        <button class="btn-primary" onclick="goToStep(7)">Continue to ${t('step7')} →</button>
       </div>
     </div>
   `;
@@ -961,50 +1034,25 @@ function advanceTrackerStage() {
 // ─────────────────────────────────────────────
 function renderImpactScreen() {
   const units = APP_STATE.monthlyUnitsSold;
-  const avgPrice = 1200;
+  const avgPrice = APP_STATE.currentOrder.unitPrice;
   const totalRev = units * avgPrice;
-  const artisanShare = totalRev * 0.60;
-  const materialShare = totalRev * 0.20;
-  const communityShare = totalRev * 0.20;
-
-  // Monthly income lift calculation
-  const families = 20;
-  const baseMonthly = 4500;
-  const addedPerFamily = Math.round(artisanShare / families);
-  const targetMonthly = baseMonthly + addedPerFamily;
-  const liftPct = Math.round(((targetMonthly - baseMonthly) / baseMonthly) * 100);
+  const artisanShare = totalRev * 0.80;
+  const materialShare = totalRev * 0.10;
+  const communityShare = totalRev * 0.10;
 
   return `
     <div class="hub-card">
       <div class="card-header-row">
         <div>
-          <h2 class="card-title">📊 ${t('tabImpact')}</h2>
-          <p class="card-desc" style="margin-bottom:0;">
-            See the impact of every order and understand self-sustaining unit economics.
-          </p>
+          <h2 class="card-title">📊 ${t('step7')}</h2>
+          <p class="card-desc" style="margin-bottom:0;">A sample estimate based on the selected product and monthly sales.</p>
         </div>
         <button class="btn-primary" onclick="downloadImpactSummary()">
           📥 Download Impact Summary
         </button>
       </div>
 
-      <!-- Top 3 Lifetime Metric Cards (Matches Page 7 of PDF) -->
-      <div class="stat-chips-grid" style="margin-bottom:24px;">
-        <div class="stat-chip-box">
-          <div class="stat-chip-num" style="color:var(--navy)">128</div>
-          <div class="stat-chip-label">Total Artisans Benefitted</div>
-        </div>
-        <div class="stat-chip-box">
-          <div class="stat-chip-num" style="color:var(--green)">24</div>
-          <div class="stat-chip-label">Total Orders Fulfilled</div>
-        </div>
-        <div class="stat-chip-box" style="grid-column: span 2;">
-          <div class="stat-chip-num" style="color:var(--primary)">₹34,81,200</div>
-          <div class="stat-chip-label">Total Gross Revenue Generated</div>
-        </div>
-      </div>
-
-      <!-- Unit Economics Box (per unit) -->
+      <!-- Sample revenue split per unit -->
       <div style="background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:24px;">
         <h4 style="font-size:14px; font-weight:800; color:var(--navy); margin-bottom:14px; text-transform:uppercase;">
           ${t('unitEconomics')}
@@ -1012,19 +1060,19 @@ function renderImpactScreen() {
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; text-align:center;">
           <div style="background:var(--bg-page); padding:14px; border-radius:10px;">
             <div style="font-size:12px; color:var(--slate);">${t('sellingPrice')}</div>
-            <div style="font-size:22px; font-weight:800; color:var(--navy); margin-top:4px;">₹1,200</div>
+            <div style="font-size:22px; font-weight:800; color:var(--navy); margin-top:4px;">${formatInr(avgPrice)}</div>
           </div>
           <div style="background:var(--green-light); padding:14px; border-radius:10px;">
-            <div style="font-size:12px; color:var(--green); font-weight:700;">${t('artisanPayout')} (60%)</div>
-            <div style="font-size:22px; font-weight:800; color:var(--green); margin-top:4px;">₹720</div>
+            <div style="font-size:12px; color:var(--green); font-weight:700;">${t('artisanPayout')} (80%)</div>
+            <div style="font-size:22px; font-weight:800; color:var(--green); margin-top:4px;">${formatInr(avgPrice * 0.8)}</div>
           </div>
           <div style="background:var(--gold-light); padding:14px; border-radius:10px;">
-            <div style="font-size:12px; color:var(--gold); font-weight:700;">${t('materialCost')} (20%)</div>
-            <div style="font-size:22px; font-weight:800; color:var(--gold); margin-top:4px;">₹240</div>
+            <div style="font-size:12px; color:var(--gold); font-weight:700;">${t('materialCost')} (10%)</div>
+            <div style="font-size:22px; font-weight:800; color:var(--gold); margin-top:4px;">${formatInr(avgPrice * 0.1)}</div>
           </div>
           <div style="background:var(--primary-light); padding:14px; border-radius:10px;">
-            <div style="font-size:12px; color:var(--primary); font-weight:700;">${t('communityShare')} (20%)</div>
-            <div style="font-size:22px; font-weight:800; color:var(--primary); margin-top:4px;">₹240</div>
+            <div style="font-size:12px; color:var(--primary); font-weight:700;">${t('communityShare')} (10%)</div>
+            <div style="font-size:22px; font-weight:800; color:var(--primary); margin-top:4px;">${formatInr(avgPrice * 0.1)}</div>
           </div>
         </div>
       </div>
@@ -1032,7 +1080,7 @@ function renderImpactScreen() {
       <!-- Interactive Dynamic Volume Simulator (Matches Page 8 of PDF) -->
       <div style="background:var(--bg-page); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:24px;">
         <h4 style="font-size:16px; font-weight:800; color:var(--navy); margin-bottom:6px;">
-          Impact & Unit Economics Live Volume Simulator
+          Monthly estimate
         </h4>
         <p style="font-size:13px; color:var(--slate); margin-bottom:18px;">
           Adjust the monthly sales volume to explore estimated artisan earnings.
@@ -1059,22 +1107,14 @@ function renderImpactScreen() {
           </div>
 
           <div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px;">
-            <div style="font-size:12px; color:var(--slate);">Family Income Lift (${families} Families)</div>
-            <div style="font-size:24px; font-weight:800; color:var(--primary); margin-top:4px;">${formatInr(targetMonthly)}/mo</div>
-            <div style="font-size:12px; color:var(--green); font-weight:600; margin-top:4px;">+${liftPct}% over ₹${baseMonthly.toLocaleString('en-IN')} baseline</div>
-          </div>
-
-          <div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px;">
-            <div style="font-size:12px; color:var(--slate);">Zero Recurring NGO Cost</div>
-            <div style="font-size:24px; font-weight:800; color:var(--green); margin-top:4px;">Self-Funding</div>
-            <div style="font-size:12px; color:var(--slate); margin-top:4px;">Operating: ₹6,200 | Community share: ${formatInr(communityShare)}</div>
+            <div style="font-size:12px; color:var(--slate);">Materials & operations (20%)</div>
+            <div style="font-size:24px; font-weight:800; color:var(--primary); margin-top:4px;">${formatInr(materialShare + communityShare)}</div>
           </div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; margin-top:20px;">
-        <button class="btn-outline" onclick="goToStep(6)">← Back to Order Tracker</button>
-        <button class="btn-primary" onclick="goToStep(1)">Return to artisan groups ↺</button>
+        <button class="btn-primary" onclick="goToStep(1)">Start workflow again ↺</button>
       </div>
     </div>
   `;
@@ -1087,8 +1127,9 @@ function onVolumeChange(val) {
 
 function downloadImpactSummary() {
   const units = APP_STATE.monthlyUnitsSold;
-  const rev = units * 1200;
-  const csv = `Metric,Value\nTotal Artisans,128\nOrders Fulfilled,24\nLifetime Revenue,₹34,81,200\nSimulated Monthly Units,${units}\nSimulated Monthly Revenue,₹${rev.toLocaleString('en-IN')}\nTarget Family Income,₹10,500/mo\nIncome Lift,+162%\nDirect Artisan Payout,80%\nSelf-Sufficiency,100% (Zero Grant Required)\n`;
+  const unitPrice = APP_STATE.currentOrder.unitPrice;
+  const revenue = units * unitPrice;
+  const csv = `Metric,Value\nProduct,${APP_STATE.currentOrder.productName}\nMonthly units,${units}\nUnit price,${formatInr(unitPrice)}\nEstimated monthly revenue,${formatInr(revenue)}\nEstimated artisan share (80%),${formatInr(revenue * 0.8)}\nEstimated materials share (10%),${formatInr(revenue * 0.1)}\nEstimated community share (10%),${formatInr(revenue * 0.1)}\n`;
   const blob = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
